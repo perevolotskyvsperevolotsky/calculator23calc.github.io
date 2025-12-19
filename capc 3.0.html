@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расширенный калькулятор</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #fafafa;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+        }
+
+        .calculator {
+            position: relative;
+            width: 300px;
+            max-width: 90vw;
+            background-color: #fff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s cubic-bezier(.1,.95,.4,1);
+        }
+
+        .calculator.active {
+            transform: scale(1.05);
+        }
+
+        input#display {
+            width: 100%;
+            height: 100px;
+            font-size: 3rem;
+            line-height: 100px;
+            text-align: right;
+            color: #333;
+            background-color: transparent;
+            border: none;
+            padding-right: 15px;
+            letter-spacing: 1px;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+            padding: 15px;
+        }
+
+        button {
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            user-select: none;
+            outline: none;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button.number {
+            background-color: #ccc;
+        }
+
+        button.operator {
+            background-color: #ffa500;
+        }
+
+        button.function {
+            background-color: #4CAF50;
+        }
+
+        button.clear,
+        button.equals {
+            background-color: #ff4d4d;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+        }
+
+        @media screen and (max-width: 400px) {
+            .calculator {
+                width: 250px;
+            }
+            
+            input#display {
+                font-size: 2.5rem;
+                height: 80px;
+                line-height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <input type="text" id="display" readonly value="0">
+    <div class="buttons-grid">
+        <!-- Функциональные кнопки -->
+        <button class="function" onclick="specialFunction('sqrt')">√</button>
+        <button class="function" onclick="specialFunction('pow')">^</button>
+        <button class="function" onclick="specialFunction('sin')">sin</button>
+        <button class="function" onclick="specialFunction('cos')">cos</button>
+        <!-- Числа -->
+        <button class="number" onclick="appendToDisplay('7')">7</button>
+        <button class="number" onclick="appendToDisplay('8')">8</button>
+        <button class="number" onclick="appendToDisplay('9')">9</button>
+        <button class="operator" onclick="performOperation('/')">÷</button>
+        <button class="number" onclick="appendToDisplay('4')">4</button>
+        <button class="number" onclick="appendToDisplay('5')">5</button>
+        <button class="number" onclick="appendToDisplay('6')">6</button>
+        <button class="operator" onclick="performOperation('*')">×</button>
+        <button class="number" onclick="appendToDisplay('1')">1</button>
+        <button class="number" onclick="appendToDisplay('2')">2</button>
+        <button class="number" onclick="appendToDisplay('3')">3</button>
+        <button class="operator" onclick="performOperation('-')">−</button>
+        <button class="number" onclick="appendToDisplay('0')">0</button>
+        <button class="clear" onclick="clearDisplay()">C</button>
+        <button class="equals" onclick="calculateResult()">=</button>
+        <button class="operator" onclick="performOperation('+')">+</button>
+    </div>
+</div>
+
+<script>
+    let currentValue = '';
+    let operator = null;
+    let previousValue = '';
+
+    function appendToDisplay(value) {
+        if (currentValue === '0' || document.getElementById("display").value === '0') {
+            currentValue = value;
+        } else {
+            currentValue += value;
+        }
+        updateDisplay();
+    }
+
+    function clearDisplay() {
+        currentValue = '';
+        previousValue = '';
+        operator = null;
+        updateDisplay();
+    }
+
+    function specialFunction(funcName) {
+        try {
+            let num = Number(currentValue);
+            switch (funcName) {
+                case 'sqrt': currentValue = Math.sqrt(num).toString(); break;
+                case 'pow': currentValue = Math.pow(num, 2).toString(); break;
+                case 'sin': currentValue = Math.sin(num).toFixed(4).toString(); break;
+                case 'cos': currentValue = Math.cos(num).toFixed(4).toString(); break;
+            }
+            updateDisplay();
+        } catch(e) { alert("Ошибка вычислений"); }
+    }
+
+    function performOperation(op) {
+        previousValue = currentValue;
+        operator = op;
+        currentValue = '';
+        updateDisplay();
+    }
+
+    function calculateResult() {
+        const prev = parseFloat(previousValue);
+        const curr = parseFloat(currentValue);
+
+        switch (operator) {
+            case '+':
+                currentValue = String(prev + curr);
+                break;
+            case '-':
+                currentValue = String(prev - curr);
+                break;
+            case '*':
+                currentValue = String(prev * curr);
+                break;
+            case '/':
+                currentValue = String(prev / curr);
+                break;
+            default:
+                return;
+        }
+        previousValue = '';
+        operator = null;
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        document.getElementById("display").value = currentValue || '0';
+    }
+
+    // Добавляем анимацию на кнопку
+    const buttons = document.querySelectorAll('.calculator button');
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelector('.calculator').classList.toggle('active');
+            setTimeout(() => {
+                document.querySelector('.calculator').classList.remove('active');
+            }, 300);
+        });
+    });
+</script>
+
+</body>
+</html>
